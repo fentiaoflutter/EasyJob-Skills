@@ -1,11 +1,11 @@
 ---
 name: api-integration-workflow
-description: 按用户提供的接口文档把 API 稳定接入到 Flutter / GetX 页面，覆盖 API / Model / Controller / Page 四层改动，做字段类型核对、解析兼容、基于日志的联调校验，并按需求粒度提交。Use when the user sends 接口文档 and asks to 接入接口 / 联调 / 修复字段类型与展示问题.
+description: 按用户提供的接口文档把 API 稳定接入到页面，覆盖网络层 / 数据模型 / 业务层 / 视图层四层改动，做字段类型核对、解析兼容、基于日志的联调校验，并按需求粒度提交。Use when the user sends 接口文档 and asks to 接入接口 / 联调 / 修复字段类型与展示问题.
 ---
 
-# 接口接入工作流（Flutter / GetX）
+# 接口接入工作流
 
-> 一句话目标：把"用户给的接口文档"按 API → Model → Controller → Page 顺序稳定接入，减少字段类型错误、解析不兼容、筛选交互不一致和联调反复。
+> 一句话目标：把"用户给的接口文档"按网络层 → 数据模型 → 业务层 → 视图层顺序稳定接入，减少字段类型错误、解析不兼容、筛选交互不一致和联调反复。
 
 ## 触发场景
 
@@ -29,16 +29,18 @@ description: 按用户提供的接口文档把 API 稳定接入到 Flutter / Get
 
 ### 2. 最小改动接入（四层）
 
-| 层 | 文件示例 | 关注点 |
-|----|----------|--------|
-| API | `<biz>_api.dart`（必要时含 `<biz>_api.g.dart`） | 路径、方法、参数命名严格对齐文档 |
-| Model | 实体类 | 字段名 / 类型与文档一致；必要时做兼容解析（如 `list` vs `<resource>List`） |
-| Controller | 业务 controller | 请求参数、筛选触发刷新、分页字段 |
-| Page | 页面 / Widget | 只改本需求需要的展示与交互 |
+按"网络层 → 数据模型 → 业务层 → 视图层"顺序改动。不同技术栈对应文件名按实际项目替换：
+
+| 层 | Flutter / GetX | React / Next | Android (MVVM) | 关注点 |
+|----|----------------|--------------|----------------|--------|
+| 网络层 | `<biz>_api.dart` | `<biz>Api.ts` / `services/<biz>.ts` | `<Biz>Repository.kt` | 路径、方法、参数命名严格对齐文档 |
+| 数据模型 | 实体类 `<Biz>Model.dart` | `types/<biz>.ts` | `<Biz>Dto.kt` / `<Biz>Entity.kt` | 字段名 / 类型与文档一致；必要时做兼容解析（如 `list` vs `<resource>List`） |
+| 业务层 | Controller (GetX) | store / hook / context | ViewModel | 请求参数、筛选触发刷新、分页字段 |
+| 视图层 | Page / Widget | Component / Page | Activity / Fragment / Compose | 只改本需求需要的展示与交互 |
 
 ### 3. 兼容与风险控制
 
-- 数字 / 字符串混用字段做安全转换（`_toInt` / `_toString` 思路）。
+- 数字 / 字符串混用字段做安全转换（`toInt` / `toString` 思路）。
 - 对偶发空值、`null`、字段别名做最小兼容。
 - **禁止顺手改无关模块**；发现无关问题先告知用户再处理。
 
@@ -66,16 +68,16 @@ description: 按用户提供的接口文档把 API 稳定接入到 Flutter / Get
 
 - 接口：`METHOD /path`
 - 主要改动：
-  - API: ...
-  - Model: ...
-  - Controller: ...
-  - Page: ...
+  - 网络层: ...
+  - 数据模型: ...
+  - 业务层: ...
+  - 视图层: ...
 - 文档对齐点：
   - 参数: ...
   - 字段类型: ...
   - 特殊规则: ...
 - 联调结果：
-  - 请求/响应核对：通过 / 问题点 ...
+  - 请求 / 响应核对：通过 / 问题点 ...
   - 剩余风险：...
 ```
 
@@ -88,4 +90,4 @@ description: 按用户提供的接口文档把 API 稳定接入到 Flutter / Get
 ## 示例
 
 > **用户**：这是接口文档，帮我接入到优惠券记录页。
-> **Skill**：抽文档参数 / 字段 → API/Model/Controller/Page 四层最小改 → 用真实日志核对 6 项 checklist → 按需求范围提交，回报 fix scope 与剩余风险。
+> **Skill**：抽文档参数 / 字段 → 网络层 / 模型 / 业务层 / 视图层四层最小改 → 用真实日志核对 6 项 checklist → 按需求范围提交，回报 fix scope 与剩余风险。

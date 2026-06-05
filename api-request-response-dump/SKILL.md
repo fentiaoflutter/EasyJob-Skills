@@ -14,7 +14,7 @@ description: 把指定接口 / 功能点的请求-响应整理成单个 Markdown
 用户这样说时调用：
 
 - 「把这个接口请求返回写到文件」「导出完整请求响应」「落到指定目录」「给后端联调包」
-- 用户提供日志（Talker / Dio / 控制台）并要求生成可复制文档。
+- 用户提供任意 HTTP 客户端日志（Talker / Dio / OkHttp / axios / fetch / logcat / 控制台 等）并要求生成可复制文档。
 
 ## 输入约定（缺则主动询问）
 
@@ -52,7 +52,7 @@ description: 把指定接口 / 功能点的请求-响应整理成单个 Markdown
 - generated_at: <ISO8601>
 - payload_status: complete | partial | unusable
 - missing_parts: <none | ...>
-- source: talker | dio | logcat
+- source: talker | dio | okhttp | axios | fetch | logcat | console
 
 ## Request
 - method: POST
