@@ -1,6 +1,8 @@
 # EasyJob-Skills
 
-> 一组开箱即用的 [Claude Code](https://docs.claude.com/en/docs/claude-code) Skills，把日常研发里那些"每次都要重复说一遍"的流程固化成可触发的工作流：需求拆解、分支管理、接口接入、国际化审计、日志清洗、提交前审查。
+> 一组开箱即用的 Agent Skills，把日常研发里那些"每次都要重复说一遍"的流程固化成可触发的工作流：需求拆解、分支管理、接口接入、国际化审计、日志清洗、提交前审查。
+>
+> 同时支持 **[Claude Code](https://docs.claude.com/en/docs/claude-code/skills) / [Cursor](https://cursor.com/docs/skills) / [Codex CLI](https://github.com/openai/codex)** —— 一份 SKILL.md，三个工具通用。
 
 本仓库收集了 7 个从真实项目里沉淀、跑通验证后再脱敏发布的 skill。每个 skill 都包含**触发场景 / 输入约定 / 执行流程 / 输出模板 / 示例**，你能直接看到"用户说什么 → skill 做什么"。
 
@@ -22,18 +24,59 @@
 
 ## 快速上手
 
+本仓库的 SKILL.md 格式是 Anthropic 提出的开放标准，**Claude Code / Cursor / Codex CLI 都能直接读**。挑你在用的工具按下面装：
+
 ```bash
-# 1. 克隆
+# 通用第 1 步：克隆仓库
 git clone https://github.com/fentiaoflutter/EasyJob-Skills.git
-
-# 2. 安装到 Claude Code 用户级 skills 目录
-mkdir -p ~/.claude/skills
-cp -R EasyJob-Skills/*/ ~/.claude/skills/
-
-# 3. 重启 Claude Code
+cd EasyJob-Skills
 ```
 
-之后用对应触发短语对 Claude Code 说话，相应 skill 会自动生效（无需手动 `/skill`）。例如对它说 *"清理一下日志"*、*"把这个接口请求返回写到文件"*、*"提交前看一下改动"*，对应的 skill 就会接管。
+### Claude Code
+
+```bash
+mkdir -p ~/.claude/skills
+cp -R */ ~/.claude/skills/
+```
+
+重启 Claude Code。
+
+### Cursor
+
+Cursor 自动扫描 `.cursor/skills/`、`.agents/skills/`、`~/.cursor/skills/`、`~/.agents/skills/`，并出于兼容性同时读取 `~/.claude/skills/` 与 `~/.codex/skills/`。任选其一：
+
+```bash
+# A. 用户级（所有项目可用，推荐）
+mkdir -p ~/.cursor/skills
+cp -R */ ~/.cursor/skills/
+
+# B. 项目级（只在某个项目里生效，更适合 monorepo 子包独立 skill）
+cd /path/to/your/project
+mkdir -p .cursor/skills
+cp -R /path/to/EasyJob-Skills/*/ .cursor/skills/
+```
+
+Reload Cursor workspace（Cmd+Shift+P → "Developer: Reload Window"）。
+
+### Codex CLI
+
+```bash
+mkdir -p ~/.codex/skills
+cp -R */ ~/.codex/skills/
+```
+
+重启 Codex CLI 会话即可。
+
+---
+
+装完之后用对应触发短语跟 Agent 说话，相应 skill 会自动生效（**无需手动 `/skill`**）。例如说 *"清理一下日志"*、*"把这个接口请求返回写到文件"*、*"提交前看一下改动"*，对应的 skill 就会接管。
+
+> 想全栈通装、又不想复制 3 份？可以只装到 `~/.claude/skills/`，然后给 `~/.cursor/skills/` 和 `~/.codex/skills/` 建符号链接：
+> ```bash
+> ln -s ~/.claude/skills ~/.cursor/skills
+> ln -s ~/.claude/skills ~/.codex/skills
+> ```
+> 之后只维护一份，三个工具同步生效。
 
 ## 7 个 Skill 一览
 
@@ -110,7 +153,7 @@ cp -R EasyJob-Skills/*/ ~/.claude/skills/
 
 ## 工作原理
 
-Claude Code Skills 是 Claude Code 的"工作流插件"机制：每个 skill 是一个目录，里面至少有一个 `SKILL.md`，文件顶部的 YAML frontmatter 告诉 Claude Code **何时触发、做什么**：
+Agent Skills 是一种"工作流插件"机制：每个 skill 是一个目录，里面至少有一个 `SKILL.md`，文件顶部的 YAML frontmatter 告诉 Agent **何时触发、做什么**：
 
 ```yaml
 ---
@@ -121,9 +164,17 @@ description: <一句话能力 + Use when ... 触发短语>
 # Skill 内容（Markdown 自由发挥）
 ```
 
-Claude Code 启动时扫描 `~/.claude/skills/` 下所有目录，对话中根据用户说的话与每个 skill 的 `description` 做语义匹配，命中后把 `SKILL.md` 正文当作 system prompt 注入，按里面的流程执行。
+Agent 启动时扫描配置的 skills 目录，对话中根据用户说的话与每个 skill 的 `description` 做语义匹配，命中后把 `SKILL.md` 正文当作 system prompt 注入，按里面的流程执行。
 
-> 想了解更多：[Claude Code Skills 官方文档](https://docs.claude.com/en/docs/claude-code/skills)
+各工具的 skills 扫描目录：
+
+| 工具 | 用户级 | 项目级 | 兼容读取 |
+|------|--------|--------|----------|
+| Claude Code | `~/.claude/skills/` | `.claude/skills/` | — |
+| Cursor | `~/.cursor/skills/`、`~/.agents/skills/` | `.cursor/skills/`、`.agents/skills/` | `~/.claude/skills/`、`~/.codex/skills/` 等 |
+| Codex CLI | `~/.codex/skills/` | `.codex/skills/` | — |
+
+> 官方文档：[Claude Code Skills](https://docs.claude.com/en/docs/claude-code/skills) · [Cursor Agent Skills](https://cursor.com/docs/skills) · [OpenAI Codex CLI](https://github.com/openai/codex)
 
 ## 目录结构
 
@@ -148,16 +199,19 @@ EasyJob-Skills/
 ## FAQ
 
 **Q：和 Claude Code 内置 skill 是什么关系？**
-A：互不冲突。内置 skill（如 `verify` / `run` / `review`）是 Claude Code 自带的通用能力；本仓库是用户级 skill，放在 `~/.claude/skills/`，可以与内置 skill 并存，互相不重名即可。
+A：互不冲突。内置 skill（如 `verify` / `run` / `review`）是 Claude Code 自带的通用能力；本仓库是用户级 skill，可以与内置 skill 并存，互相不重名即可。
 
 **Q：会不会和我已有的 skill 冲突？**
-A：只要目录名不重名就不会冲突。建议先 `ls ~/.claude/skills/` 看一眼，重名的话改名或先备份再装。
+A：只要目录名不重名就不会冲突。建议先 `ls ~/.claude/skills/`（或 `~/.cursor/skills/` / `~/.codex/skills/`）看一眼，重名的话改名或先备份再装。
 
 **Q：可以只装一两个吗？**
 A：可以，每个 skill 都是独立目录，单独 `cp -R` 一个就行。
 
 **Q：触发短语支持改吗？**
-A：直接改对应 SKILL.md frontmatter 里的 `description`，重启 Claude Code 即可生效。
+A：直接改对应 SKILL.md frontmatter 里的 `description`，重启 Agent 即可生效。
+
+**Q：Cursor / Codex CLI 真的能直接读 Claude Code 的 SKILL.md 吗？**
+A：可以。SKILL.md（含 YAML frontmatter 的 `name` 与 `description`）是 Anthropic 提出的开放格式，Cursor 与 Codex CLI 都按这个格式扫描自己的 skills 目录；且 Cursor 出于兼容性会**同时读取** `~/.claude/skills/` 与 `~/.codex/skills/`。所以如果你三个工具都在用，把 skills 放在 `~/.claude/skills/` 一份即可，Cursor 也能识别。
 
 ## 贡献
 
